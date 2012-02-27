@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <fragment android:name="edu.uri.ele.capstone.monitorfleet.DataFragment"
+        	android:id="@+id/dataFragment"
+        	android:layout_weight="1"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent" />
+
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent" 
+        android:background="#000000"/>
+    
+    <fragment android:name="edu.uri.ele.capstone.monitorfleet.MapFragment"
+	        android:id="@+id/mapFragment"
+	        android:layout_weight="2"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent" >
+    </fragment>
+</LinearLayout>
