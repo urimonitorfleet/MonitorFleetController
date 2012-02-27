@@ -87,7 +87,6 @@ public class Vehicle {
 	public enum VehicleType { 
 		DRONE,
 		FLAGSHIP,
-		TARGET,
-		TEST
+		TARGET
 	} 
 }
