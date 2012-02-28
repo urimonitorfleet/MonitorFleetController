@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_test"
+          android:title="@string/menu_test"
+          android:showAsAction="ifRoom|withText" />
+    
+    <item android:id="@+id/menu_refresh"
+          android:icon="@drawable/refresh"
+          android:title="@string/menu_refresh"
+          android:showAsAction="ifRoom|withText" />
+    
     <item android:id="@+id/menu_video"
           android:icon="@drawable/video_camera"
           android:title="@string/menu_video_camera"

@@ -11,14 +11,14 @@ public class Vehicle {
 	private GeoPoint _gpsLoc;
 	private List<DataItem> _data;
 	
-	public Vehicle(String ipAddress, VehicleType vehicleType){
+	public Vehicle(String ipAddress){
 		_ipAddr = ipAddress;
-		_vType = vehicleType;
+		_vType = VehicleType.NONE;
 		_hasGps = false;
 	}
 	
-	public Vehicle(String ipAddress, VehicleType vehicleType, List<DataItem> data){
-		this(ipAddress, vehicleType);
+	public Vehicle(String ipAddress, List<DataItem> data){
+		this(ipAddress);
 		
 		this._data = data;
 		
@@ -87,6 +87,7 @@ public class Vehicle {
 	public enum VehicleType { 
 		DRONE,
 		FLAGSHIP,
-		TARGET
+		TARGET,
+		NONE
 	} 
 }

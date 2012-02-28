@@ -14,7 +14,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 
-import edu.uri.ele.capstone.monitorfleet.util.Pair;
+import android.util.Pair;
 import edu.uri.ele.capstone.monitorfleet.util.Vehicle.VehicleType;
 
 public class MFCMapActivity extends MapActivity {
@@ -79,6 +79,9 @@ public class MFCMapActivity extends MapActivity {
 	public void markPoint(GeoPoint p, VehicleType type){
 		List<Overlay> overlays = _mv.getOverlays();
 		overlays.clear();
+		
+		if(p == null) return;
+		
 		overlays.add(new MapOverlay(p, type));
 		
 		_mv.invalidate();
@@ -88,9 +91,11 @@ public class MFCMapActivity extends MapActivity {
 		List<Overlay> overlays = _mv.getOverlays();
 		overlays.clear();
 		
+		if(points == null) return;
+		
 		for(int i = 0; i < points.size(); i++){
 			Pair<GeoPoint, VehicleType> current = points.get(i);
-			overlays.add(new MapOverlay(current.getT(), current.getU()));	
+			overlays.add(new MapOverlay(current.first, current.second));	
 		}
 	}
 	

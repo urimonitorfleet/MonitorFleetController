@@ -3,7 +3,9 @@ package edu.uri.ele.capstone.monitorfleet.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -21,6 +23,17 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class DataFeedParser {
+	
+	public static boolean UrlExists(String url){
+		try {
+			HttpURLConnection.setFollowRedirects(false);
+			HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+			conn.setRequestMethod("HEAD");
+			return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
+		} catch (Exception e) {
+			return false;
+		}
+	}
 	
 	public static ArrayList<DataItem> GetData(String url){
 		ArrayList<DataItem> _data = new ArrayList<DataItem>();
@@ -42,12 +55,11 @@ public class DataFeedParser {
 		return _data;
 	}
 	
-	private static String URL2XMLString(String url){
+	public static String URL2XMLString(String url){
 		String _xml = null;
 		
 		try {
-			DefaultHttpClient httpClient = new DefaultHttpClient();
-			HttpResponse httpResponse = httpClient.execute(new HttpPost(url));
+			HttpResponse httpResponse = new DefaultHttpClient().execute(new HttpPost(url));
 			_xml = EntityUtils.toString(httpResponse.getEntity());
 		} catch (UnsupportedEncodingException e) {
 			_xml= "<results status=\"error\"><msg>Can't connect to server</msg></results>";
@@ -60,7 +72,7 @@ public class DataFeedParser {
 		return _xml;
 	}
 	
-	private static Document String2XML(String xml){
+	public static Document String2XML(String xml){
 		Document doc = null;
 		
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
