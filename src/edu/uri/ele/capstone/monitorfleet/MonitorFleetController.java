@@ -76,7 +76,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     		case R.id.menu_refresh:
     			findVehicles_start();
     			break;
-    		case R.id.menu_test:
+    		case R.id.menu_clear:
     			test();
     			break;
     		default:
