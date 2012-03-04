@@ -8,6 +8,7 @@ import com.google.android.maps.GeoPoint;
 
 import edu.uri.ele.capstone.monitorfleet.util.DataFeedParser;
 import edu.uri.ele.capstone.monitorfleet.util.DataItem;
+import edu.uri.ele.capstone.monitorfleet.util.Utilities;
 import edu.uri.ele.capstone.monitorfleet.util.Vehicle;
 import edu.uri.ele.capstone.monitorfleet.util.Vehicle.VehicleType;
 import android.app.ActionBar;
@@ -29,22 +30,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 public class MonitorFleetController extends FragmentActivity implements TabListener {
-	
+
 	private MFCMapActivity _map = null;
 	private DataFragment _dataFragment = null;
-	
+
 	private static final String VehicleIpAddresses[] = { "Left", "Right", "Flagship" };
 	private List<Vehicle> _vehicles;
+	private Vehicle _selected;
 	
 	public MonitorFleetController(){
 		super();
-		
+
 		_vehicles = new ArrayList<Vehicle>();
 	}
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        
         
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -71,13 +75,10 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     public boolean onOptionsItemSelected(MenuItem menu){
     	switch(menu.getItemId()){
     		case R.id.menu_video:
-    			//launchVideo();
+    			launchVideo();
     			break;
     		case R.id.menu_refresh:
     			findVehicles_start();
-    			break;
-    		case R.id.menu_clear:
-    			test();
     			break;
     		default:
     			return false;
@@ -86,15 +87,30 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     	return true;
     }
     
-    private void test(){
-    	synchronized(_vehicles){
-    		_vehicles.clear();
+    private void launchVideo(){
+    	String ipAddr = null;
+    	
+    	for(DataItem i : _selected.getData()){
+    		if(i.getMachineName().equals("com_ipAddr_eth")){
+    			ipAddr = i.getValue();
+    			break;
+    		}else if(i.getMachineName().equals("com_ipAddr_wlan")){
+    			ipAddr = i.getValue();
+    		}
     	}
-    	getActionBar().removeAllTabs();
-		
-		_dataFragment.toggleData(false);
-    }
 
+    	String streamURL = "rtsp://" + ipAddr + ":8080/test.sdp";
+    	
+//    	if(!Utilities.UrlExists(streamURL)){
+//    		Toast.makeText(this, "Cannot connect to host!", Toast.LENGTH_SHORT).show();
+//    	}else{
+    		StreamDialog d = new StreamDialog(this);
+        	d.setContentView(R.layout.stream);
+        	d.show();
+    		d.play(streamURL);
+//    	}
+    }
+    
 	private void findVehicles_start() {
 		final Dialog dialog = ProgressDialog.show(this, "", "Discovering Vehicles, Please Wait...", true);
 
@@ -113,7 +129,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 					for(String _ip : VehicleIpAddresses){
 						//String url = "http://" + _ip + "/data.xml";
 						String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + _ip + ".xml";
-						if(DataFeedParser.UrlExists(url)){
+						if(Utilities.UrlExists(url)){
 							_vehicles.add(new Vehicle(_ip, DataFeedParser.GetData(url)));
 						}
 					}
@@ -177,8 +193,8 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		
 		ArrayList<HashMap<String, String>> out = new ArrayList<HashMap<String, String>>();
 		
-		Vehicle current = (Vehicle)tab.getTag();
-		List<DataItem> _data = current.getData();
+		_selected = (Vehicle)tab.getTag();
+		List<DataItem> _data = _selected.getData();
 		
 		for(int i = 0; i < _data.size(); i++){
 			DataItem d = (DataItem)_data.get(i);
@@ -188,8 +204,8 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 
 		_dataFragment.updateListContent(out);
 		
-		if(_map != null && current.hasGps()){
-			_map.setCentered(current.getGps());
+		if(_map != null && _selected.hasGps()){
+			_map.setCentered(_selected.getGps());
 		}
 	}
 	
@@ -202,4 +218,5 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	protected void attachDataFragment(DataFragment dF){
 		_dataFragment = dF;
 	}
+
 }
