@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<resources>
+    <style name="Theme_Dialog_Spinner" parent="android:style/Theme.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+	<style name="Theme_Dialog_Stream" parent="android:style/Theme.Dialog">
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowBackground">@drawable/stream_dialog_background</item>
+		<item name="android:animateLayoutChanges">false</item>
+	</style>
+</resources>
