@@ -3,9 +3,7 @@ package edu.uri.ele.capstone.monitorfleet.util;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -23,18 +21,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class DataFeedParser {
-	
-	public static boolean UrlExists(String url){
-		try {
-			HttpURLConnection.setFollowRedirects(false);
-			HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-			conn.setRequestMethod("HEAD");
-			return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
-		} catch (Exception e) {
-			return false;
-		}
-	}
-	
+
 	public static ArrayList<DataItem> GetData(String url){
 		ArrayList<DataItem> _data = new ArrayList<DataItem>();
 		
