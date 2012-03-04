@@ -14,15 +14,15 @@
         android:theme="@android:style/Theme.Holo.Light">
         
         <uses-library android:name="com.google.android.maps"/>
-        <activity android:label="@string/app_name" android:name="edu.uri.ele.capstone.monitorfleet.MFCMapActivity" />
-        <activity
-            android:name=".MonitorFleetController"
-            android:label="@string/app_name" >
+        
+        <activity android:name=".MonitorFleetController" android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MFCMapActivity" />
+        
     </application>
 
 </manifest>

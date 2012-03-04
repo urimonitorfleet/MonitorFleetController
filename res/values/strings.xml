@@ -2,8 +2,7 @@
 <resources>
     <string name="app_name">Monitor Fleet Controller</string>
     <string name="googlemaps_api_key">03yuvA0n-OsTDMUyC6ds9cbFeeX-ZNI5JERTtPQ</string>
-    <string name="menu_video_camera">Start Video Stream&#8230;</string>
-    <string name="menu_clear">Clear List</string>
+    <string name="menu_video_camera">Start Video Stream</string>
     <string name="nodata">No Vehicles Found</string>
     <string name="menu_refresh">Refresh Vehicle List</string>
 
