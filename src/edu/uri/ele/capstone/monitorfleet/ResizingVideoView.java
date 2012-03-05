@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.VideoView;
 
-
 public class ResizingVideoView extends VideoView {
 
 	private int _forceW = 0;

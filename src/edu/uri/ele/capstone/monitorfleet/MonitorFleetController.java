@@ -28,6 +28,7 @@ import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MonitorFleetController extends FragmentActivity implements TabListener {
 
@@ -47,9 +48,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        
-        
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         
@@ -100,12 +99,11 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     	}
 
     	String streamURL = "rtsp://" + ipAddr + ":8080/test.sdp";
-    	
+
 //    	if(!Utilities.UrlExists(streamURL)){
 //    		Toast.makeText(this, "Cannot connect to host!", Toast.LENGTH_SHORT).show();
 //    	}else{
     		StreamDialog d = new StreamDialog(this);
-        	d.setContentView(R.layout.stream);
         	d.show();
     		d.play(streamURL);
 //    	}
