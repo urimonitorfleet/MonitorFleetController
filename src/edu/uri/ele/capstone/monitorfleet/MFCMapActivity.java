@@ -73,7 +73,7 @@ public class MFCMapActivity extends MapActivity {
 		
 		_mv.getController().animateTo(p);
 		
-		mc.setZoom(20);
+		mc.setZoom(25);
 	}
 	
 	public void markPoint(GeoPoint p, VehicleType type){
@@ -85,6 +85,8 @@ public class MFCMapActivity extends MapActivity {
 		overlays.add(new MapOverlay(p, type));
 		
 		_mv.invalidate();
+		
+		setCentered(p);
 	}
 	
 	public void markPoints(List<Pair<GeoPoint, VehicleType>> points){
@@ -93,9 +95,15 @@ public class MFCMapActivity extends MapActivity {
 		
 		if(points == null) return;
 		
+		Pair<GeoPoint, VehicleType> current = null;
+		
 		for(int i = 0; i < points.size(); i++){
-			Pair<GeoPoint, VehicleType> current = points.get(i);
+			current = points.get(i);
 			overlays.add(new MapOverlay(current.first, current.second));	
+		}
+		
+		if(current != null){
+			setCentered(current.first);
 		}
 	}
 	
