@@ -28,7 +28,7 @@ import android.view.MenuItem;
 
 public class MonitorFleetController extends FragmentActivity implements TabListener {
 
-	private static final String VehicleIpAddresses[] = { "Left", "Right", "Flagship" };
+	private static final String VehicleIpAddresses[] = { "192.168.1.4" }; //"Left", "Right", "Flagship" };
 	
 	private MFCMapActivity _map = null;
 	private DataFragment _dataFragment = null;
@@ -39,12 +39,27 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	private Runnable dataUpdateTask = new Runnable() {
 		public void run(){
 			synchronized(_selected){
-				if (_dataFragment == null) return;
-				_selected.update();
+				if (_dataFragment == null || _map == null) return;
+				
+				ActionBar bar = getActionBar();
+				
+				List<Pair<GeoPoint, VehicleType>> pts = new ArrayList<Pair<GeoPoint, VehicleType>>();
+				
+				for(int i = 0; i < bar.getTabCount(); i++){
+					Vehicle cur = (Vehicle)bar.getTabAt(i).getTag();
+					
+					cur.update();
+
+					if(cur.hasGps()){
+						pts.add(new Pair<GeoPoint, VehicleType>(cur.getGps(), cur.getVehicleType()));
+					}
+				}
 
 				_dataFragment.updateListContent(_selected.getUiData());
 				
-				if(_map != null && _selected.hasGps()){
+				_map.markPoints(pts);
+				
+				if(_selected.hasGps()){
 					_map.setCentered(_selected.getGps());
 				}
 				
@@ -114,11 +129,9 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
 	
 	private void launchVideo(){
-    	//String ipAddr = _selected.getIpAddr();
-    	
     	// Test streams at:  http://www.law.duke.edu/cspd/contest/finalists/
-    	String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
-    	//String streamURL = "rtsp://" + ipAddr + ":8554/main.sdp";
+    	//String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
+    	String streamURL = "rtsp://" + _selected.getIpAddr() + ":8554/main.sdp";
     	
 		StreamDialog d = new StreamDialog(this);
     	d.show();
@@ -142,8 +155,8 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 			List<Vehicle> out = new ArrayList<Vehicle>();
 			
 			for(String ip : VehicleIpAddresses){
-				//String url = "http://" + _ip + "/data.xml";
-				String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ip + ".xml";
+				String url = "http://" + ip + "/data.xml";
+				//String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ip + ".xml";
 				if(Utilities.UrlExists(url)){
 					out.add(new Vehicle(ip));
 				}
@@ -173,7 +186,6 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 			}else{
 				_dataFragment.toggleData(true);
 	
-				List<Pair<GeoPoint, VehicleType>> vehiclePositions = new ArrayList<Pair<GeoPoint, VehicleType>>();
 				ActionBar bar = getActionBar();
 				
 				for(Vehicle v : vehicles){
@@ -182,16 +194,8 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 					bar.addTab(bar.newTab().setText(v.getIpAddr() + " (" + v.getVehicleType() + ")")
 								 	 	   .setTabListener(MonitorFleetController.this)
 								 	 	   .setTag(v));
-					
-					if(v.hasGps()){
-						vehiclePositions.add(new Pair<GeoPoint, VehicleType>(v.getGps(), v.getVehicleType()));
-					}
 				}
-				
-				if(_map != null){
-					_map.markPoints(vehiclePositions);
-				}
-				
+
 				dataHandler.post(dataUpdateTask);
 			}
 			
