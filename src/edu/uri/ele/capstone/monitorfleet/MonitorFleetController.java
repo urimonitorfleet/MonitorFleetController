@@ -1,13 +1,10 @@
 package edu.uri.ele.capstone.monitorfleet;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.google.android.maps.GeoPoint;
 
-import edu.uri.ele.capstone.monitorfleet.util.DataFeedParser;
-import edu.uri.ele.capstone.monitorfleet.util.DataItem;
 import edu.uri.ele.capstone.monitorfleet.util.Utilities;
 import edu.uri.ele.capstone.monitorfleet.util.Vehicle;
 import edu.uri.ele.capstone.monitorfleet.util.Vehicle.VehicleType;
@@ -19,31 +16,42 @@ import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class MonitorFleetController extends FragmentActivity implements TabListener {
 
+	private static final String VehicleIpAddresses[] = { "Left", "Right", "Flagship" };
+	
 	private MFCMapActivity _map = null;
 	private DataFragment _dataFragment = null;
 
-	private static final String VehicleIpAddresses[] = { "192.168.1.4" };//"Left", "Right", "Flagship" };
-	private List<Vehicle> _vehicles;
 	private Vehicle _selected;
 	
-	public MonitorFleetController(){
-		super();
+	private Handler dataHandler = new Handler();
+	private Runnable dataUpdateTask = new Runnable() {
+		public void run(){
+			synchronized(_selected){
+				if (_dataFragment == null) return;
+				_selected.update();
 
-		_vehicles = new ArrayList<Vehicle>();
-	}
+				_dataFragment.updateListContent(_selected.getUiData());
+				
+				if(_map != null && _selected.hasGps()){
+					_map.setCentered(_selected.getGps());
+				}
+				
+				dataHandler.postDelayed(this, 1000);
+			}
+		}
+	};
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,16 +68,23 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setDisplayShowTitleEnabled(false);  
 		
-		findVehicles_start();
+		new FindVehiclesTask().execute();
     }
     
+    @Override
+    public void onDestroy(){
+    	dataHandler.removeCallbacks(dataUpdateTask);
+    	
+    	super.onDestroy();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return true;
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(MenuItem menu){
     	switch(menu.getItemId()){
@@ -77,7 +92,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     			launchVideo();
     			break;
     		case R.id.menu_refresh:
-    			findVehicles_start();
+    			new FindVehiclesTask().execute();
     			break;
     		default:
     			return false;
@@ -86,77 +101,67 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     	return true;
     }
     
-    private void launchVideo(){
-    	String ipAddr = null;
-    	
-    	for(DataItem i : _selected.getData()){
-    		if(i.getMachineName().equals("com_ipAddr_wlan")){
-    			ipAddr = i.getValue();
-    			break;
-    		}//else if(i.getMachineName().equals("com_ipAddr_eth")){
-    		//	ipAddr = i.getValue();
-    		//}
-    	}
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		synchronized(_selected){
+			_selected = (Vehicle)tab.getTag();
+			dataHandler.post(dataUpdateTask);
+		}
+	}	
+	public void onTabReselected(Tab tab, FragmentTransaction ft) { }
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) { dataHandler.removeCallbacks(dataUpdateTask); }
+	
+	protected void attachMapActivity(MFCMapActivity map) { _map = map; }
+	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
+	
+	private void launchVideo(){
+    	//String ipAddr = _selected.getIpAddr();
     	
     	// Test streams at:  http://www.law.duke.edu/cspd/contest/finalists/
-    	//String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
-    	String streamURL = "rtsp://" + ipAddr + ":8554/main.sdp";
+    	String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
+    	//String streamURL = "rtsp://" + ipAddr + ":8554/main.sdp";
     	
-    	//if(!Utilities.UrlExists(streamURL)){
-//    		Toast.makeText(this, "Cannot connect to stream: " + streamURL, Toast.LENGTH_LONG).show();
-    	//}else{
-    		StreamDialog d = new StreamDialog(this);
-        	d.show();
-    		d.play(streamURL);
-    	//}
+		StreamDialog d = new StreamDialog(this);
+    	d.show();
+		d.play(streamURL);
     }
-    
-	private void findVehicles_start() {
-		final Dialog dialog = ProgressDialog.show(this, "", "Discovering Vehicles, Please Wait...", true);
-
-		final Handler h = new Handler(){
-			public void handleMessage(Message msg){
-				findVehicles_end();
-				dialog.dismiss();
-			}
-		};
+	
+	private class FindVehiclesTask extends AsyncTask<Void, Void, List<Vehicle>> {
+		Dialog d;
 		
-		Thread worker = new Thread(){
-			public void run(){
-				synchronized(_vehicles){
-					_vehicles.clear();
-					
-					for(String _ip : VehicleIpAddresses){
-						String url = "http://" + _ip + "/data.xml";
-						//String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + _ip + ".xml";
-						if(Utilities.UrlExists(url)){
-							_vehicles.add(new Vehicle(_ip, DataFeedParser.GetData(url)));
-						}
-					}
+		@Override
+		protected void onPreExecute(){
+			d = ProgressDialog.show(MonitorFleetController.this, "", "Discovering Vehicles, Please Wait...", true);
+			
+			MonitorFleetController.this.getActionBar().removeAllTabs();
+			
+			_dataFragment.toggleData(false);
+		}
+		
+		@Override
+		protected List<Vehicle> doInBackground(Void... params) {
+			List<Vehicle> out = new ArrayList<Vehicle>();
+			
+			for(String ip : VehicleIpAddresses){
+				//String url = "http://" + _ip + "/data.xml";
+				String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ip + ".xml";
+				if(Utilities.UrlExists(url)){
+					out.add(new Vehicle(ip));
 				}
-				
-				h.sendEmptyMessage(0);
 			}
 			
-		};
+			return out;
+		}
 		
-		worker.start();
-
-		getActionBar().removeAllTabs();
-	}
-	
-	private void findVehicles_end(){
-		synchronized(_vehicles){
-			if (_vehicles.size() == 0) {
-				_dataFragment.toggleData(false);
-				
+		@Override
+		protected void onPostExecute(List<Vehicle> vehicles){
+			if (vehicles.size() == 0) {
 				String adMsg = "Nothing was found while scanning the following IPs:\n\n";
-				for(String _ip : VehicleIpAddresses){
-					adMsg += "\t" + _ip + "\n";
+				for(String ip : VehicleIpAddresses){
+					adMsg += "\t" + ip + "\n";
 				}
 				adMsg += "\nPlease review the network configuration!";
 				
-				AlertDialog.Builder adBuilder = new AlertDialog.Builder(this);
+				AlertDialog.Builder adBuilder = new AlertDialog.Builder(MonitorFleetController.this);
 				adBuilder.setMessage(adMsg)
 						 .setCancelable(false)
 						 .setNeutralButton("OK", new DialogInterface.OnClickListener() {
@@ -171,9 +176,11 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 				List<Pair<GeoPoint, VehicleType>> vehiclePositions = new ArrayList<Pair<GeoPoint, VehicleType>>();
 				ActionBar bar = getActionBar();
 				
-				for(Vehicle v : _vehicles){
+				for(Vehicle v : vehicles){
+					_selected = v;
+					
 					bar.addTab(bar.newTab().setText(v.getIpAddr() + " (" + v.getVehicleType() + ")")
-								 	 	   .setTabListener(this)
+								 	 	   .setTabListener(MonitorFleetController.this)
 								 	 	   .setTag(v));
 					
 					if(v.hasGps()){
@@ -184,39 +191,11 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 				if(_map != null){
 					_map.markPoints(vehiclePositions);
 				}
+				
+				dataHandler.post(dataUpdateTask);
 			}
+			
+			d.dismiss();
 		}
 	}
-
-	public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		if (_dataFragment == null) return;
-		
-		ArrayList<HashMap<String, String>> out = new ArrayList<HashMap<String, String>>();
-		
-		_selected = (Vehicle)tab.getTag();
-		List<DataItem> _data = _selected.getData();
-		
-		for(int i = 0; i < _data.size(); i++){
-			DataItem d = (DataItem)_data.get(i);
-
-			out.add(d.getStringHashMap());
-		}
-
-		_dataFragment.updateListContent(out);
-		
-		if(_map != null && _selected.hasGps()){
-			_map.setCentered(_selected.getGps());
-		}
-	}
-	
-	public void onTabReselected(Tab tab, FragmentTransaction ft) { }
-	public void onTabUnselected(Tab tab, FragmentTransaction ft) { }
-	
-	protected void attachMapActivity(MFCMapActivity map){
-		_map = map;
-	}
-	protected void attachDataFragment(DataFragment dF){
-		_dataFragment = dF;
-	}
-
 }
