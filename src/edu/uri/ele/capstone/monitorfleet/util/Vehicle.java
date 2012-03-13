@@ -20,8 +20,8 @@ public class Vehicle {
 	
 	public Vehicle(String ipAddress){
 		_ipAddr = ipAddress;	
-		_dataURL = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ipAddress + ".xml";
-		//_dataURL = "http://" + ipAddress + "/data.xml";
+		//_dataURL = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ipAddress + ".xml";
+		_dataURL = "http://" + ipAddress + "/data.xml";
 
 		update();
 	}
@@ -73,12 +73,14 @@ public class Vehicle {
 	}
 	
 	public void update() { 
-		_data = DataFeedParser.GetData(_dataURL);
-		
 		_uiData = new ArrayList<HashMap<String, String>>();
 		_vType = VehicleType.NONE;
 		_hasGps = false;
 		
+		if(!Utilities.UrlExists(_dataURL)) return;
+		
+		_data = DataFeedParser.GetData(_dataURL);
+
 		if(_data.isEmpty()) return;
 		
 		this.setType();
