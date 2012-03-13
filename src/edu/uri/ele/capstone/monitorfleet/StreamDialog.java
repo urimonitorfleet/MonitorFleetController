@@ -9,7 +9,6 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -53,11 +52,9 @@ public class StreamDialog extends Dialog {
 		_v.setOnPreparedListener(new OnPreparedListener(){
 			@Override
 			public void onPrepared(MediaPlayer mp) {
-				Log.d("blah", "prepared");
 				_d.dismiss();
 			}
 		});
-
 		_v.setOnErrorListener(new OnErrorListener(){
 			@Override
 			public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -72,14 +69,10 @@ public class StreamDialog extends Dialog {
 						_self.cancel();
 					}	
 				});
-				
-				b.create().show();
-				
+				b.create().show();		
 				return true;
 			}
-			
 		});
-		
 		_v.setOnTouchListener(new OnTouchListener(){
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -97,7 +90,7 @@ public class StreamDialog extends Dialog {
 			}
 		});
 		
-		_v.setVideoURI(Uri.parse(url));
+		_v.setVideoPath(url);
 		_v.setZOrderOnTop(true);
 		_v.requestFocus();
 		
