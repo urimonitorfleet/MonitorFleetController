@@ -35,7 +35,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	private MFCMapActivity _map = null;
 	private DataFragment _dataFragment = null;
 
-	private static final String VehicleIpAddresses[] = { "Left", "Right", "Flagship" };
+	private static final String VehicleIpAddresses[] = { "192.168.1.4" };//"Left", "Right", "Flagship" };
 	private List<Vehicle> _vehicles;
 	private Vehicle _selected;
 	
@@ -90,23 +90,25 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     	String ipAddr = null;
     	
     	for(DataItem i : _selected.getData()){
-    		if(i.getMachineName().equals("com_ipAddr_eth")){
+    		if(i.getMachineName().equals("com_ipAddr_wlan")){
     			ipAddr = i.getValue();
     			break;
-    		}else if(i.getMachineName().equals("com_ipAddr_wlan")){
-    			ipAddr = i.getValue();
-    		}
+    		}//else if(i.getMachineName().equals("com_ipAddr_eth")){
+    		//	ipAddr = i.getValue();
+    		//}
     	}
-
-    	String streamURL = "rtsp://" + ipAddr + ":8080/test.sdp";
-
-//    	if(!Utilities.UrlExists(streamURL)){
-//    		Toast.makeText(this, "Cannot connect to host!", Toast.LENGTH_SHORT).show();
-//    	}else{
+    	
+    	// Test streams at:  http://www.law.duke.edu/cspd/contest/finalists/
+    	//String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
+    	String streamURL = "rtsp://" + ipAddr + ":8554/main.sdp";
+    	
+    	//if(!Utilities.UrlExists(streamURL)){
+//    		Toast.makeText(this, "Cannot connect to stream: " + streamURL, Toast.LENGTH_LONG).show();
+    	//}else{
     		StreamDialog d = new StreamDialog(this);
         	d.show();
     		d.play(streamURL);
-//    	}
+    	//}
     }
     
 	private void findVehicles_start() {
@@ -125,8 +127,8 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 					_vehicles.clear();
 					
 					for(String _ip : VehicleIpAddresses){
-						//String url = "http://" + _ip + "/data.xml";
-						String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + _ip + ".xml";
+						String url = "http://" + _ip + "/data.xml";
+						//String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + _ip + ".xml";
 						if(Utilities.UrlExists(url)){
 							_vehicles.add(new Vehicle(_ip, DataFeedParser.GetData(url)));
 						}
