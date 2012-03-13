@@ -1,29 +1,29 @@
 package edu.uri.ele.capstone.monitorfleet.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.google.android.maps.GeoPoint;
 
 public class Vehicle {
-	private String _ipAddr;
+	private final String _ipAddr;
+	private final String _dataURL;
+	
 	private VehicleType _vType;
+	
 	private boolean _hasGps;
 	private GeoPoint _gpsLoc;
+	
 	private List<DataItem> _data;
+	private ArrayList<HashMap<String, String>> _uiData;
 	
 	public Vehicle(String ipAddress){
-		_ipAddr = ipAddress;
-		_vType = VehicleType.NONE;
-		_hasGps = false;
-	}
-	
-	public Vehicle(String ipAddress, List<DataItem> data){
-		this(ipAddress);
-		
-		this._data = data;
-		
-		this.setType();  
-		this.setGps();
+		_ipAddr = ipAddress;	
+		_dataURL = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ipAddress + ".xml";
+		//_dataURL = "http://" + ipAddress + "/data.xml";
+
+		update();
 	}
 	
 	private void setType() {
@@ -72,10 +72,23 @@ public class Vehicle {
 		}
 	}
 	
-	public void update(List<DataItem> newData) { 
-		this._data = newData;
+	public void update() { 
+		_data = DataFeedParser.GetData(_dataURL);
 		
+		_uiData = new ArrayList<HashMap<String, String>>();
+		_vType = VehicleType.NONE;
+		_hasGps = false;
+		
+		if(_data.isEmpty()) return;
+		
+		this.setType();
 		this.setGps();
+
+		for(int i = 0; i < _data.size(); i++){
+			DataItem d = (DataItem)_data.get(i);
+
+			_uiData.add(d.getStringHashMap());
+		}
 	}
 	
 	public String getIpAddr() { return this._ipAddr; }
@@ -83,6 +96,7 @@ public class Vehicle {
 	public boolean hasGps() { return this._hasGps; }
 	public GeoPoint getGps() { return this._gpsLoc; }
 	public List<DataItem> getData() { return this._data; }
+	public ArrayList<HashMap<String, String>> getUiData() { return this._uiData; }
 	
 	public enum VehicleType { 
 		DRONE,
