@@ -76,9 +76,7 @@ public class Vehicle {
 		_uiData = new ArrayList<HashMap<String, String>>();
 		_vType = VehicleType.NONE;
 		_hasGps = false;
-		
-		if(!Utilities.UrlExists(_dataURL)) return;
-		
+
 		_data = DataFeedParser.GetData(_dataURL);
 
 		if(_data.isEmpty()) return;

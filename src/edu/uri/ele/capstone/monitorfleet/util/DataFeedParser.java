@@ -28,7 +28,15 @@ public class DataFeedParser {
 		String xml = URL2XMLString(url);
 		Document doc = String2XML(xml);
 	
-		NodeList nodes = doc.getElementsByTagName("DataItem");
+		NodeList nodes = null;
+		
+		while(nodes == null){
+			try{
+				nodes = doc.getElementsByTagName("DataItem");
+			}catch(NullPointerException e){
+				nodes = null;
+			}
+		}
 		
 		for(int i = 0; i < nodes.getLength(); i++){
 			Element current = (Element)nodes.item(i);
