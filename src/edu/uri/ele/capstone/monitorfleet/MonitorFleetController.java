@@ -47,15 +47,15 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 				
 				for(int i = 0; i < bar.getTabCount(); i++){
 					Vehicle cur = (Vehicle)bar.getTabAt(i).getTag();
-					
-					cur.update();
 
+					cur.update();
+					
 					if(cur.hasGps()){
 						pts.add(new Pair<GeoPoint, VehicleType>(cur.getGps(), cur.getVehicleType()));
 					}
 				}
 
-				_dataFragment.updateListContent(_selected.getUiData());
+				_dataFragment.updateListContent(_selected.getData(), false);
 				
 				_map.markPoints(pts);
 				
@@ -67,7 +67,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 			}
 		}
 	};
-	
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,11 +119,12 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		synchronized(_selected){
 			_selected = (Vehicle)tab.getTag();
-			dataHandler.post(dataUpdateTask);
+			
+			_dataFragment.updateListContent(_selected.getData(), true);
 		}
 	}	
 	public void onTabReselected(Tab tab, FragmentTransaction ft) { }
-	public void onTabUnselected(Tab tab, FragmentTransaction ft) { dataHandler.removeCallbacks(dataUpdateTask); }
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) { }
 	
 	protected void attachMapActivity(MFCMapActivity map) { _map = map; }
 	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
@@ -158,7 +159,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 				String url = "http://" + ip + "/data.xml";
 				//String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ip + ".xml";
 				if(Utilities.UrlExists(url)){
-					out.add(new Vehicle(ip));
+					out.add(new Vehicle(ip, url));
 				}
 			}
 			
@@ -186,11 +187,11 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 			}else{
 				_dataFragment.toggleData(true);
 	
+				_selected = vehicles.get(0);
+				
 				ActionBar bar = getActionBar();
 				
 				for(Vehicle v : vehicles){
-					_selected = v;
-					
 					bar.addTab(bar.newTab().setText(v.getIpAddr() + " (" + v.getVehicleType() + ")")
 								 	 	   .setTabListener(MonitorFleetController.this)
 								 	 	   .setTag(v));
