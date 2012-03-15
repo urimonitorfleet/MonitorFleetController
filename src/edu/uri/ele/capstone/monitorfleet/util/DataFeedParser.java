@@ -24,13 +24,12 @@ public class DataFeedParser {
 
 	public static ArrayList<DataItem> GetData(String url){
 		ArrayList<DataItem> _data = new ArrayList<DataItem>();
-		
-		String xml = URL2XMLString(url);
-		Document doc = String2XML(xml);
-	
 		NodeList nodes = null;
 		
 		while(nodes == null){
+			String xml = URL2XMLString(url);
+			Document doc = String2XML(xml);
+
 			try{
 				nodes = doc.getElementsByTagName("DataItem");
 			}catch(NullPointerException e){
