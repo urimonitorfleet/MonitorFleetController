@@ -28,17 +28,16 @@ public class DataItem implements Comparable<DataItem>{
 	@Override
 	public boolean equals(Object obj){
 		if (this == obj) return true;
-		if (!(obj instanceof DataItem)) return false;
 		
-		DataItem _obj = (DataItem)obj;
-		return this._machineName.equals(_obj._machineName);
+		return (obj instanceof DataItem) && _machineName.equals(((DataItem)obj)._machineName);
 	}
 	
 	@Override
 	public int hashCode(){
-		return this._machineName.hashCode();
+		return _machineName.hashCode();
 	}
 
+	@Override
 	public int compareTo(DataItem another) {
 		return this._machineName.compareTo(another._machineName);
 	}
