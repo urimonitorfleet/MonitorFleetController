@@ -1,7 +1,5 @@
 package edu.uri.ele.capstone.monitorfleet.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.google.android.maps.GeoPoint;
@@ -16,12 +14,10 @@ public class Vehicle {
 	private GeoPoint _gpsLoc;
 	
 	private List<DataItem> _data;
-	private ArrayList<HashMap<String, String>> _uiData;
 	
-	public Vehicle(String ipAddress){
-		_ipAddr = ipAddress;	
-		//_dataURL = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ipAddress + ".xml";
-		_dataURL = "http://" + ipAddress + "/data.xml";
+	public Vehicle(String ipAddress, String dataURL){
+		_ipAddr = ipAddress;
+		_dataURL = dataURL;
 
 		update();
 	}
@@ -73,7 +69,6 @@ public class Vehicle {
 	}
 	
 	public void update() { 
-		_uiData = new ArrayList<HashMap<String, String>>();
 		_vType = VehicleType.NONE;
 		_hasGps = false;
 
@@ -83,12 +78,6 @@ public class Vehicle {
 		
 		this.setType();
 		this.setGps();
-
-		for(int i = 0; i < _data.size(); i++){
-			DataItem d = (DataItem)_data.get(i);
-
-			_uiData.add(d.getStringHashMap());
-		}
 	}
 	
 	public String getIpAddr() { return this._ipAddr; }
@@ -96,7 +85,6 @@ public class Vehicle {
 	public boolean hasGps() { return this._hasGps; }
 	public GeoPoint getGps() { return this._gpsLoc; }
 	public List<DataItem> getData() { return this._data; }
-	public ArrayList<HashMap<String, String>> getUiData() { return this._uiData; }
 	
 	public enum VehicleType { 
 		DRONE,
