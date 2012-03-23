@@ -55,7 +55,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 					}
 				}
 
-				_dataFragment.updateListContent(_selected.getData(), false);
+				_dataFragment.updateListContent(_selected.getData(), true);
 				
 				_map.markPoints(pts);
 				
@@ -81,16 +81,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
         
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		bar.setDisplayShowHomeEnabled(false);
-		bar.setDisplayShowTitleEnabled(false);  
-		
-		new FindVehiclesTask().execute();
-    }
-    
-    @Override
-    public void onDestroy(){
-    	dataHandler.removeCallbacks(dataUpdateTask);
-    	
-    	super.onDestroy();
+		bar.setDisplayShowTitleEnabled(false);
     }
 
     @Override
@@ -125,6 +116,19 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	}	
 	public void onTabReselected(Tab tab, FragmentTransaction ft) { }
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) { }
+	
+	@Override
+	protected void onResume(){
+		super.onResume();
+		
+		new FindVehiclesTask().execute();
+	}
+	@Override
+	protected void onPause(){
+		dataHandler.removeCallbacks(dataUpdateTask);
+		
+		super.onPause();
+	}
 	
 	protected void attachMapActivity(MFCMapActivity map) { _map = map; }
 	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
