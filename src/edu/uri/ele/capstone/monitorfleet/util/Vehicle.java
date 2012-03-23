@@ -41,25 +41,27 @@ public class Vehicle {
 	
 	private void setGps(){
 		boolean hasGps = false;
-		String gpsCoord[] = { null, null };
+		String gpsQual, lat_s, lng_s;
+		
+		lat_s = lng_s = null;
 		
 		for(DataItem i : this._data){
-			if(i.getMachineName().equals("gps_lat")) {
-				gpsCoord[0] = i.getValue();
-				hasGps |= (gpsCoord[1] != null);
+			if(i.getMachineName().equals("gps_quality")) {
+				gpsQual = i.getValue();
+				hasGps = !gpsQual.equals("None");
+				break;
+			}else if(i.getMachineName().equals("gps_lat")){
+				lat_s = i.getValue();
 			}else if(i.getMachineName().equals("gps_long")){
-				gpsCoord[1] = i.getValue();
-				hasGps |= (gpsCoord[0] != null);
+				lng_s = i.getValue();
 			}
-			
-			if (hasGps) break;
 		}
 		
-		if(hasGps){
+		if(hasGps && lat_s != null && lng_s != null){
 			this._hasGps = true;
 			
-			double lat = Double.parseDouble(gpsCoord[0]);
-	        double lng = Double.parseDouble(gpsCoord[1]);
+			double lat = Double.parseDouble(lat_s);
+	        double lng = Double.parseDouble(lng_s);
 	        
 	        this._gpsLoc = new GeoPoint((int)(lat * 1E6), (int)(lng * 1E6));
 		}else{
