@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -64,43 +65,43 @@ public class DataFragment extends ListFragment {
 	}
 	
 	public void updateListContent(List<DataItem> newData, boolean clear){
-
-		if (clear) _listData.clear();
+		//if (clear) 
+		_listData.clear();
 		
-		if(_listData.size() == 0){
+		//if(_listData.size() == 0){
 			for(int i = 0; i < newData.size(); i++){
 				DataItem d = (DataItem)newData.get(i);
 	
 				_listData.add(d.getStringHashMap());
 			}
-		}else{
-			int j_st = 0;
-			
-			for(int i = 0; i < newData.size(); i++){
-				if(j_st >= _listData.size()){
-					_listData.add(((DataItem)newData.get(i)).getStringHashMap());
-					continue;
-				}
-				
-				for(int j = j_st; j < _listData.size(); j++){
-					DataItem cur_di = (DataItem)newData.get(i);
-					HashMap<String, String> cur_hm = _listData.get(j);
-					
-					int cmp = cur_di.getMachineName().compareTo(cur_hm.get("machineName"));
-					
-					if(cmp == 0){ // found -> update
-						cur_hm.put("value", cur_di.getValue());
-						j_st = j + 1;
-						break;
-					}else if(cmp > 0){  // missing -> insert
-						_listData.add(j, cur_di.getStringHashMap());
-						j_st = j + 1;
-						break;
-					}
-				}
-			}
-		}
+//		}else{
+//			int j_st = 0;
+//			
+//			for(int i = 0; i < newData.size(); i++){
+//				if(j_st >= _listData.size()){
+//					_listData.add(((DataItem)newData.get(i)).getStringHashMap());
+//					continue;
+//				}
+//				
+//				for(int j = j_st; j < _listData.size(); j++){
+//					DataItem cur_di = (DataItem)newData.get(i);
+//					HashMap<String, String> cur_hm = _listData.get(j);
+//					
+//					int cmp = cur_di.getMachineName().compareTo(cur_hm.get("machineName"));
+//					
+//					if(cmp == 0){ // found -> update
+//						cur_hm.put("value", cur_di.getValue());
+//						j_st = j + 1;
+//						break;
+//					}else if(cmp > 0){  // missing -> insert
+//						_listData.add(j, cur_di.getStringHashMap());
+//						j_st = j + 1;
+//						break;
+//					}
+//				}
+//			}
+//		}
 		
-		((SimpleAdapter)getListAdapter()).notifyDataSetChanged();
+		((BaseAdapter)getListAdapter()).notifyDataSetChanged();
 	}
 }
