@@ -20,13 +20,23 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import android.util.Log;
+
 public class DataFeedParser {
 
 	public static ArrayList<DataItem> GetData(String url){
 		ArrayList<DataItem> _data = new ArrayList<DataItem>();
 		NodeList nodes = null;
 		
-		while(nodes == null){
+		int attempts = 0;
+		
+		while(Utilities.UrlExists(url) && nodes == null){
+			
+			if (++attempts > 2 && !Utilities.UrlExists(url)) {
+				Log.d("DataFeedParser", "URL not found after 3 tries -> returning empty list");
+				break;
+			}
+
 			String xml = URL2XMLString(url);
 			Document doc = String2XML(xml);
 
@@ -34,16 +44,17 @@ public class DataFeedParser {
 				nodes = doc.getElementsByTagName("DataItem");
 			}catch(NullPointerException e){
 				nodes = null;
+				continue;
 			}
-		}
 		
-		for(int i = 0; i < nodes.getLength(); i++){
-			Element current = (Element)nodes.item(i);
-			String mN = current.getElementsByTagName("machineName").item(0).getFirstChild().getNodeValue();
-			String dN = current.getElementsByTagName("displayName").item(0).getFirstChild().getNodeValue();
-			String val = current.getElementsByTagName("value").item(0).getFirstChild().getNodeValue();
-			
-			_data.add(new DataItem(mN, dN, val));
+			for(int i = 0; i < nodes.getLength(); i++){
+				Element current = (Element)nodes.item(i);
+				String mN = current.getElementsByTagName("machineName").item(0).getFirstChild().getNodeValue();
+				String dN = current.getElementsByTagName("displayName").item(0).getFirstChild().getNodeValue();
+				String val = current.getElementsByTagName("value").item(0).getFirstChild().getNodeValue();
+				
+				_data.add(new DataItem(mN, dN, val));
+			}
 		}
 		
 		return _data;
