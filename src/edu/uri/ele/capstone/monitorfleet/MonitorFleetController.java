@@ -16,6 +16,8 @@ import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -134,6 +136,12 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
 	
 	private void launchVideo(){
+		Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + _selected.getIpAddr() + ":8080?action=stream"));
+		i.setClassName("com.dngames.mjpegviewer", "com.dngames.mjpegviewer.MJpegViewer");
+		startActivity(i);
+
+		/* Uncomment for VLC-powered RTSP MP4 streaming
+		 
     	// Test streams at:  http://www.law.duke.edu/cspd/contest/finalists/
     	//String streamURL = "http://www.law.duke.edu/cspd/contest/finalists/viewentry.php?file=docandyou";
     	String streamURL = "rtsp://" + _selected.getIpAddr() + ":8554/main.sdp";
@@ -141,6 +149,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		StreamDialog d = new StreamDialog(this);
     	d.show();
 		d.play(streamURL);
+		*/
     }
 	
 	private class FindVehiclesTask extends AsyncTask<Void, Void, List<Vehicle>> {
