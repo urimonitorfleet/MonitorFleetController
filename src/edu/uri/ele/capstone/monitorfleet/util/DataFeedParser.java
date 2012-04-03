@@ -22,6 +22,12 @@ import org.xml.sax.SAXException;
 
 import android.util.Log;
 
+/**
+ * Class to convert the XML data file hosted by a vehicle to a Java ArrayList of DataItems
+ * 
+ * @author bkintz
+ *
+ */
 public class DataFeedParser {
 
 	public static ArrayList<DataItem> GetData(String url){
@@ -30,15 +36,19 @@ public class DataFeedParser {
 		
 		int attempts = 0;
 		
+		// keep trying the given URL as long as we don't have data
+		// this accounts for the chance of getting the data while the 
+		// vehicle is in the process of updating it
 		while(Utilities.UrlExists(url) && nodes == null){
 			
+			// timeout after 3 attempts
 			if (++attempts > 2 && !Utilities.UrlExists(url)) {
 				Log.d("DataFeedParser", "URL not found after 3 tries -> returning empty list");
 				break;
 			}
 
-			String xml = URL2XMLString(url);
-			Document doc = String2XML(xml);
+			String xml = URL2XMLString(url); 	// convert webpage to a string
+			Document doc = String2XML(xml);		// convert string to XML
 
 			try{
 				nodes = doc.getElementsByTagName("DataItem");
@@ -47,6 +57,7 @@ public class DataFeedParser {
 				continue;
 			}
 		
+			// parse the XML into DataItems
 			for(int i = 0; i < nodes.getLength(); i++){
 				Element current = (Element)nodes.item(i);
 				String mN = current.getElementsByTagName("machineName").item(0).getFirstChild().getNodeValue();
@@ -60,6 +71,12 @@ public class DataFeedParser {
 		return _data;
 	}
 	
+	/**
+	 * Get an XML file hosted on the network
+	 * 
+	 * @param url The URL to the XML file
+	 * @return The XML as a string
+	 */
 	public static String URL2XMLString(String url){
 		String _xml = null;
 		
@@ -77,6 +94,12 @@ public class DataFeedParser {
 		return _xml;
 	}
 	
+	/**
+	 * Convert an XML-string to a Java XML Document
+	 * 
+	 * @param xml The XML as a single string
+	 * @return The XML Document
+	 */
 	public static Document String2XML(String xml){
 		Document doc = null;
 		
