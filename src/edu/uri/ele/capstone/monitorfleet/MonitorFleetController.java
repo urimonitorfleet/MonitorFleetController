@@ -28,8 +28,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+/**
+ * Main activity class for the app
+ * 
+ * @author bkintz
+ *
+ */
 public class MonitorFleetController extends FragmentActivity implements TabListener {
 
+	// static array of the IP addresses that the tablet should search for vehicle data
 	private static final String VehicleIpAddresses[] = { "192.168.1.4" }; //"Left", "Right", "Flagship" };
 	
 	private MFCMapActivity _map = null;
@@ -37,34 +44,42 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 
 	private Vehicle _selected;
 	
+	// stuff to handle auto updating
 	private Handler dataHandler = new Handler();
 	private Runnable dataUpdateTask = new Runnable() {
 		public void run(){
 			synchronized(_selected){
+				// don't do anything if the app hasn't been fully created yet
 				if (_dataFragment == null || _map == null) return;
 				
 				ActionBar bar = getActionBar();
 				
 				List<Pair<GeoPoint, VehicleType>> pts = new ArrayList<Pair<GeoPoint, VehicleType>>();
 				
+				// update each vehicles data and set up to update the map
 				for(int i = 0; i < bar.getTabCount(); i++){
 					Vehicle cur = (Vehicle)bar.getTabAt(i).getTag();
 
 					cur.update();
 					
+					// add the vehicle to the list of points to be shown on the map
 					if(cur.hasGps()){
 						pts.add(new Pair<GeoPoint, VehicleType>(cur.getGps(), cur.getVehicleType()));
 					}
 				}
 
-				_dataFragment.updateListContent(_selected.getData(), true);
+				// update the list
+				_dataFragment.updateListContent(_selected.getData());
 				
+				// update the map
 				_map.markPoints(pts);
 				
+				// center the map on the currently selected vehicle
 				if(_selected.hasGps()){
 					_map.setCentered(_selected.getGps());
 				}
 				
+				// set up to run again in a second
 				dataHandler.postDelayed(this, 1000);
 			}
 		}
@@ -74,13 +89,16 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // loosen up the threading policy for the map fragment
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         
+        // show the app
         setContentView(R.layout.main);
         
         ActionBar bar = getActionBar();
         
+        // enable action bar tabs and remove the icon/app name
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		bar.setDisplayShowHomeEnabled(false);
 		bar.setDisplayShowTitleEnabled(false);
@@ -95,6 +113,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menu){
+    	// handle clicks/presses on the video and refresh buttons in the action bar
     	switch(menu.getItemId()){
     		case R.id.menu_video:
     			launchVideo();
@@ -109,11 +128,14 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
     	return true;
     }
     
+    // handle tab events
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
 		synchronized(_selected){
+			
+			// when we select a different vehicle, update _selected and update the list
 			_selected = (Vehicle)tab.getTag();
 			
-			_dataFragment.updateListContent(_selected.getData(), true);
+			_dataFragment.updateListContent(_selected.getData());
 		}
 	}	
 	public void onTabReselected(Tab tab, FragmentTransaction ft) { }
@@ -123,10 +145,12 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	protected void onResume(){
 		super.onResume();
 		
+		// restart auto-updating
 		new FindVehiclesTask().execute();
 	}
 	@Override
 	protected void onPause(){
+		// stop auto-updating
 		dataHandler.removeCallbacks(dataUpdateTask);
 		
 		super.onPause();
@@ -136,6 +160,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 	protected void attachDataFragment(DataFragment dF)	 { _dataFragment = dF; }
 	
 	private void launchVideo(){
+		// launch the video stream in the MjpegViewer app
 		Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + _selected.getIpAddr() + ":8080?action=stream"));
 		i.setClassName("com.dngames.mjpegviewer", "com.dngames.mjpegviewer.MJpegViewer");
 		startActivity(i);
@@ -152,11 +177,15 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		*/
     }
 	
+	/*
+	 * Thread worker method to scan the IP list for active vehicles
+	 */
 	private class FindVehiclesTask extends AsyncTask<Void, Void, List<Vehicle>> {
 		Dialog d;
 		
 		@Override
 		protected void onPreExecute(){
+			// prep:  show wait dialog, clear out any old vehicles
 			d = ProgressDialog.show(MonitorFleetController.this, "", "Discovering Vehicles, Please Wait...", true);
 			
 			MonitorFleetController.this.getActionBar().removeAllTabs();
@@ -168,6 +197,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		protected List<Vehicle> doInBackground(Void... params) {
 			List<Vehicle> out = new ArrayList<Vehicle>();
 			
+			// process:  for every ip in the list, check if a data file exists and add it if it does
 			for(String ip : VehicleIpAddresses){
 				String url = "http://" + ip + "/data.xml";
 				//String url = "http://egr.uri.edu/~bkintz/files/capstone_test/" + ip + ".xml";
@@ -181,6 +211,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 		
 		@Override
 		protected void onPostExecute(List<Vehicle> vehicles){
+			// finish up:  if nothing found, say so in an alert box
 			if (vehicles.size() == 0) {
 				String adMsg = "Nothing was found while scanning the following IPs:\n\n";
 				for(String ip : VehicleIpAddresses){
@@ -198,6 +229,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 							}
 						}).create().show();
 			}else{
+				// if we found vehicles, select and show the first one found
 				_dataFragment.toggleData(true);
 	
 				_selected = vehicles.get(0);
@@ -210,6 +242,7 @@ public class MonitorFleetController extends FragmentActivity implements TabListe
 								 	 	   .setTag(v));
 				}
 
+				// start auto-updater
 				dataHandler.post(dataUpdateTask);
 			}
 			
