@@ -30,7 +30,7 @@ import android.view.MenuItem;
 
 public class MonitorFleetController extends FragmentActivity implements TabListener {
 
-	private static final String VehicleIpAddresses[] = { "192.168.1.4" }; //"Left", "Right", "Flagship" };
+	private static final String VehicleIpAddresses[] = { "192.168.1.4", "192.168.1.6", "192.168.1.8" };
 	
 	private MFCMapActivity _map = null;
 	private DataFragment _dataFragment = null;
