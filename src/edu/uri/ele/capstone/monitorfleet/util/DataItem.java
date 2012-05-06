@@ -2,6 +2,12 @@ package edu.uri.ele.capstone.monitorfleet.util;
 
 import java.util.HashMap;
 
+/**
+ * Container class for the information displayed on the tablet.
+ * 
+ * @author bkintz
+ *
+ */
 public class DataItem implements Comparable<DataItem>{
 	private String _machineName, _displayName, _value;
 	
@@ -15,6 +21,11 @@ public class DataItem implements Comparable<DataItem>{
 	public String getDisplayName() { return _displayName; }
 	public String getValue() { return _value; }
 	
+	/**
+	 * Convert the DataItem to a HashMap.  Used to display the item as an Android list element
+	 * 
+	 * @return HashMap form of the DataItem
+	 */
 	public HashMap<String, String> getStringHashMap() { 
 		HashMap<String, String> out = new HashMap<String, String>();
 		

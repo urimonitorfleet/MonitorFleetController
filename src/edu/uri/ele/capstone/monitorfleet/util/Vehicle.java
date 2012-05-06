@@ -4,6 +4,12 @@ import java.util.List;
 
 import com.google.android.maps.GeoPoint;
 
+/**
+ * Object representing a single vehicle from the fleet
+ * 
+ * @author bkintz
+ *
+ */
 public class Vehicle {
 	private final String _ipAddr;
 	private final String _dataURL;
@@ -22,6 +28,9 @@ public class Vehicle {
 		update();
 	}
 	
+	/**
+	 * Search through the DataItem list to find the current operating mode
+	 */
 	private void setType() {
 		for(DataItem i : this._data){
 			if(i.getMachineName().equals("op_mode")){
@@ -39,12 +48,16 @@ public class Vehicle {
 		}
 	}
 	
+	/**
+	 * Set the GPS information
+	 */
 	private void setGps(){
 		boolean hasGps = false;
 		String gpsQual, lat_s, lng_s;
 		
 		lat_s = lng_s = null;
 		
+		// get the data out of the list
 		for(DataItem i : this._data){
 			if(i.getMachineName().equals("gps_quality")) {
 				gpsQual = i.getValue();
@@ -57,6 +70,7 @@ public class Vehicle {
 			}
 		}
 		
+		// if we have data, convert it into a Geographical Point for the map
 		if(hasGps && lat_s != null && lng_s != null){
 			this._hasGps = true;
 			
@@ -74,6 +88,7 @@ public class Vehicle {
 		_vType = VehicleType.NONE;
 		_hasGps = false;
 
+		// re-fetch the data from the vehicle
 		_data = DataFeedParser.GetData(_dataURL);
 
 		if(_data.isEmpty()) return;

@@ -38,6 +38,7 @@ public class MFCMapActivity extends MapActivity {
 			Point screenPt = new Point();
 			mapView.getProjection().toPixels(_p, screenPt);
 			
+			// set the vehicle icon
 			Bitmap bmp;
 			switch(_type){
 				case DRONE:
@@ -68,6 +69,9 @@ public class MFCMapActivity extends MapActivity {
 		((MonitorFleetController)getParent()).attachMapActivity(this);
 	}
 	
+	/*
+	 * Center the map at point p
+	 */
 	public void setCentered(GeoPoint p){
 		MapController mc = _mv.getController();
 		
@@ -89,6 +93,9 @@ public class MFCMapActivity extends MapActivity {
 		setCentered(p);
 	}
 	
+	/*
+	 * Mark a list of vehicles on the map
+	 */
 	public void markPoints(List<Pair<GeoPoint, VehicleType>> points){
 		List<Overlay> overlays = _mv.getOverlays();
 		overlays.clear();
@@ -97,6 +104,7 @@ public class MFCMapActivity extends MapActivity {
 		
 		Pair<GeoPoint, VehicleType> current = null;
 		
+		// add each of the map points
 		for(int i = 0; i < points.size(); i++){
 			current = points.get(i);
 			overlays.add(new MapOverlay(current.first, current.second));	
